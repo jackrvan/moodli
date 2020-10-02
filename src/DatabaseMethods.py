@@ -46,3 +46,10 @@ def get_activities_from_entry_id(entry_id):
     with dbopen(MOODS_DB) as db:
         activities = [x[0] for x in db.execute("SELECT activity FROM entry_activities INNER JOIN activities ON entry_activities.activity_id = activities.rowid WHERE entry_id=?", (entry_id,)).fetchall()]
         return activities
+
+def get_all_entries():
+    with dbopen(MOODS_DB) as db:
+        entries = []
+        for entry in db.execute("SELECT rowid, content, mood, date FROM entries").fetchall():
+            entries.append(Entry(entry[1], entry[2], get_activities_from_entry_id(entry[0]), entry[3]))
+        return entries

@@ -1,7 +1,7 @@
 import os
 import sqlite3
 
-MOODS_DB = os.path.join(os.path.dirname(__file__), 'moods.db')
+MOODS_DB = os.path.join(os.path.dirname(__file__), '..', 'moods.db')
 
 class dbopen(object):
     """Simple context manager for opening a database file. Automatically commits and exits

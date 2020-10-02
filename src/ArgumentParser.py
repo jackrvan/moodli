@@ -1,7 +1,8 @@
 import argparse
 
 from Entry import Entry
-from DatabaseMethods import get_todays_entry, get_entries_by_activity, get_entries_by_dates
+from DatabaseMethods import get_todays_entry, get_entries_by_activity, get_entries_by_dates, get_all_entries
+from stats import average_mood_per_activity, average_mood_per_day
 
 def daily_entry(args):
     entry = Entry(args.content, args.mood, args.activities)
@@ -15,8 +16,14 @@ def get_entry(args):
         print('\n'.join(str(x) for x in get_entries_by_activity(args.activity)))
     elif args.dates:
         print('\n'.join(str(x) for x in get_entries_by_dates(args.dates)))
+    elif args.all:
+        print('\n'.join(str(x) for x in get_all_entries()))
     else:
         print("HMM not sure how you got here")
+
+def stats(args):
+    average_mood_per_activity()
+    average_mood_per_day() 
 
 def mood_type(mood):
     try:
@@ -32,11 +39,12 @@ def get_parser():
     parser = argparse.ArgumentParser(description="Command line blog")
     subparsers = parser.add_subparsers()
     
-    get_entry_subparser = subparsers.add_parser("get-entry", help="get a post.")
+    get_entry_subparser = subparsers.add_parser("get-entry", help="Get a post.")
     mutually_exclusive = get_entry_subparser.add_mutually_exclusive_group(required=True)
     mutually_exclusive.add_argument("--today", '-t', action="store_true", help="View todays entry.")
     mutually_exclusive.add_argument("--activity", '-a', type=str, help="Get all entries that you did an activity")
     mutually_exclusive.add_argument("--dates", '-d', nargs="+", help="Get all entries on the given dates. Format yyyy-mm-dd")
+    mutually_exclusive.add_argument("--all", action="store_true", help="Get all entries")
     get_entry_subparser.set_defaults(func=get_entry)
 
     daily_entry_subparser = subparsers.add_parser("daily-entry", help="Enter your daily entry")
@@ -44,4 +52,7 @@ def get_parser():
     daily_entry_subparser.add_argument("--content", '-n', type=str, default="", help="A brief journal entry of what you did/how you felt today.")
     daily_entry_subparser.add_argument("--activities", '-a', nargs="+", default=[], help="List of activities you did today.")
     daily_entry_subparser.set_defaults(func=daily_entry)
+
+    stats_parser = subparsers.add_parser("stats", help="Get stats on what activities make you feel better or worse.")
+    stats_parser.set_defaults(func=stats)
     return parser

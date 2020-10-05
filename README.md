@@ -3,8 +3,7 @@
 ## Installation
         git clone https://github.com/jackrvan/moodli.git
         cd moodli
-        virtualenv moodli-venv && source moodli-venv/bin/activate  # Optional. Only for if you do not want to install requirement packages in system default python
-        pip install -r requirements.txt
+        python setup.py install --user
 
 ## Usage
 ##### - Create your daily entry

@@ -16,7 +16,7 @@ def average_mood_per_activity():
         avgs = {}
         for activity, moods in activity_to_list_of_moods.items():
             avgs[activity] = sum(moods)/len(moods)
-        print("AVERAGE MOOD BY ACTIVITY")
+        print("\nAVERAGE MOOD BY ACTIVITY")
         print(tabulate(sorted(avgs.items(), key=lambda x: x[1], reverse=True), headers=["Activity", "Avg Mood"]))
 
 def average_mood_per_day():
@@ -29,5 +29,5 @@ def average_mood_per_day():
         avgs = {}
         for day, moods in day_to_list_of_moods.items():
             avgs[day] = sum(moods)/len(moods)
-        print("AVERAGE MOOD BY DAY OF WEEK")
+        print("\nAVERAGE MOOD BY DAY OF WEEK")
         print(tabulate(avgs.items(), headers=["Day", "Avg Mood"]))

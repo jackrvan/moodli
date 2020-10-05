@@ -1,7 +1,9 @@
 import os
 import sqlite3
+from pathlib import Path
 
-MOODS_DB = os.path.join(os.path.dirname(__file__), '..', 'moods.db')
+MOODS_DB = os.path.join(str(Path.home()), '.moodli', '.moods.db')
+ENTRY_COLUMNS = {'content': "TEXT", 'mood': "INTEGER", 'sleep': "INTEGER", 'date': "TEXT"}
 
 class dbopen(object):
     """Simple context manager for opening a database file. Automatically commits and exits

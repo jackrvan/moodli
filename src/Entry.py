@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from constants import dbopen, MOODS_DB
+from src.constants import dbopen, MOODS_DB
 
 class Entry():
     def __init__(self, content, mood, activities, sleep, date=datetime.now().date()):

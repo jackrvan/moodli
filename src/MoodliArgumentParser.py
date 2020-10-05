@@ -1,8 +1,8 @@
 import argparse
 
-from Entry import Entry
-from DatabaseMethods import get_todays_entry, get_entries_by_activity, get_entries_by_dates, get_all_entries, update_database_to_new_version
-from stats import average_mood_per_activity, average_mood_per_day
+from src.Entry import Entry
+from src.DatabaseMethods import get_todays_entry, get_entries_by_activity, get_entries_by_dates, get_all_entries, update_database_to_new_version
+from src.stats import average_mood_per_activity, average_mood_per_day
 
 def daily_entry(args):
     entry = Entry(args.content, args.mood, args.activities, args.hours_of_sleep)

@@ -1,10 +1,26 @@
+import os
 from datetime import datetime
 from collections import namedtuple
 
-from constants import dbopen, MOODS_DB, ENTRY_COLUMNS
-from Entry import Entry
+from src.constants import dbopen, MOODS_DB, ENTRY_COLUMNS
+from src.Entry import Entry
 
 EntryTuple = namedtuple("EntryTuple", ['rowid', 'content', 'mood', 'sleep', 'date'])   # entry.content looks a lot cleaner than entry[1]
+
+def set_up_db():
+    create_entries = "CREATE TABLE IF NOT EXISTS entries(content TEXT, mood INTEGER NOT NULL, sleep INTEGER, date TEXT NOT NULL)"
+    create_activities = "CREATE TABLE IF NOT EXISTS activities(activity  TEXT NOT NULL)"
+    create_entry_activities = "CREATE TABLE IF NOT EXISTS entry_activities(entry_id INTEGER, activity_id INTEGER, " \
+                              "FOREIGN KEY(entry_id) REFERENCES entries(rowid), " \
+                              "FOREIGN KEY(activity_id) REFERENCES activities(rowid))"
+    create_statements = [create_entries, create_activities, create_entry_activities]
+    if not os.path.exists(MOODS_DB):
+        if not os.path.exists(os.path.dirname(MOODS_DB)):
+            os.makedirs(os.path.dirname(MOODS_DB))
+        print(f"Writing {MOODS_DB}")
+        with dbopen(MOODS_DB) as db:
+            for create_statement in create_statements:
+                db.execute(create_statement)
 
 def get_todays_entry():
     with dbopen(MOODS_DB) as db:

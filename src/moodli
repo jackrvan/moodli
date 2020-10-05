@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+import os
+
+from src.MoodliArgumentParser import get_parser
+from src.constants import MOODS_DB, dbopen
+from src.DatabaseMethods import set_up_db
+
+def main():
+    set_up_db()
+    parser = get_parser()
+    args = parser.parse_args()
+    args.func(args)
+
+if __name__ == '__main__':
+    main()

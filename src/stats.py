@@ -2,7 +2,7 @@ from tabulate import tabulate
 from collections import defaultdict
 from datetime import datetime
 
-from constants import dbopen, MOODS_DB
+from src.constants import dbopen, MOODS_DB
 
 def average_mood_per_activity():
     with dbopen(MOODS_DB) as db:

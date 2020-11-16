@@ -1,7 +1,8 @@
 import argparse
 
 from src.Entry import Entry
-from src.DatabaseMethods import get_todays_entry, get_entries_by_activity, get_entries_by_dates, get_all_entries, update_database_to_new_version
+from src.DatabaseMethods import get_todays_entry, get_entries_by_activity, \
+    get_entries_by_dates, get_all_entries, update_database_to_new_version
 from src.stats import average_mood_per_activity, average_mood_per_day
 
 def daily_entry(args):
@@ -23,7 +24,7 @@ def get_entry(args):
 
 def stats(args):
     average_mood_per_activity()
-    average_mood_per_day() 
+    average_mood_per_day()
 
 def mood_type(mood):
     try:
@@ -41,7 +42,7 @@ def update_database(args):
 def get_parser():
     parser = argparse.ArgumentParser(description="Command line blog")
     subparsers = parser.add_subparsers()
-    
+
     get_entry_subparser = subparsers.add_parser("get-entry", help="Get a post.")
     mutually_exclusive = get_entry_subparser.add_mutually_exclusive_group(required=True)
     mutually_exclusive.add_argument("--today", '-t', action="store_true", help="View todays entry.")

@@ -1,9 +1,7 @@
-import os
 import sqlite3
-from pathlib import Path
 
-MOODS_DB = os.path.join(str(Path.home()), '.moodli', '.moods.db')
 ENTRY_COLUMNS = {'content': "TEXT", 'mood': "INTEGER", 'sleep': "INTEGER", 'date': "TEXT"}
+KNOWN_CONFIG_ARGS = frozenset(['server_ip', 'server_username', 'server_password', 'database_location'])
 
 class dbopen(object):
     """Simple context manager for opening a database file. Automatically commits and exits

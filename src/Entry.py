@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from src.constants import dbopen, MOODS_DB
+from src.constants import dbopen
+from src.ConfigSettings import ConfigSettings
 
 class Entry():
     def __init__(self, content, mood, activities, sleep, date=datetime.now().date()):
@@ -9,14 +10,20 @@ class Entry():
         self.activities = activities
         self.date = date
         self.sleep = sleep
-    
+
     def __str__(self):
         activities = ', '.join(self.activities)
-        return f'================\nDate: {self.date}\nMood: {self.mood}/10\nHours of Sleep: {self.sleep}\nActivities: {activities}\nDiary Entry: {self.content}\n================'
+        return f'================\n' \
+                'Date: {self.date}\n' \
+                'Mood: {self.mood}/10\n' \
+                'Hours of Sleep: {self.sleep}\n' \
+                'Activities: {activities}\nDiary Entry: {self.content}\n' \
+                '================'
 
     def save_to_database(self):
-        with dbopen(MOODS_DB) as db:
-            db.execute("INSERT INTO entries(content, mood, sleep, date) VALUES(?, ?, ?, ?)", (self.content, self.mood, self.sleep, self.date))
+        with dbopen(ConfigSettings.db_path) as db:
+            db.execute("INSERT INTO entries(content, mood, sleep, date) " \
+                "VALUES(?, ?, ?, ?)", (self.content, self.mood, self.sleep, self.date))
             entry_id = db.lastrowid
             for activity in self.activities:
                 activity_ids = db.execute("SELECT rowid FROM activities WHERE activity = ?", (activity,)).fetchall()

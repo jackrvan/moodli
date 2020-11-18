@@ -3,11 +3,15 @@ from datetime import datetime
 from tabulate import tabulate
 
 from src.constants import dbopen
-from src.ConfigSettings import ConfigSettings
 
-def average_mood_per_activity():
-    with dbopen(ConfigSettings.db_path) as db:
-        all_activities = db.execute("SELECT activity FROM activities").fetchall() 
+def average_mood_per_activity(db_path):
+    """Calculate the average mood based on each activity you have done
+
+    Args:
+        db_path (str): Path to our database.
+    """
+    with dbopen(db_path) as db:
+        all_activities = db.execute("SELECT activity FROM activities").fetchall()
         activity_to_list_of_moods = {}  # Dict of activity that maps to a list of moods out of 10
         for activity in all_activities:
             entry_ids = db.execute("""SELECT entry_id FROM entry_activities
@@ -20,11 +24,17 @@ def average_mood_per_activity():
         for activity, moods in activity_to_list_of_moods.items():
             avgs[activity] = round(sum(moods)/len(moods), 2)
         print("\nAVERAGE MOOD BY ACTIVITY")
-        print(tabulate(sorted(avgs.items(), key=lambda x: x[1], reverse=True), headers=["Activity", "Avg Mood"]))
+        print(tabulate(sorted(avgs.items(), key=lambda x: x[1], reverse=True),
+                       headers=["Activity", "Avg Mood"]))
 
-def average_mood_per_day():
+def average_mood_per_day(db_path):
+    """Calculate the average mood based on the day of the week.
+
+    Args:
+        db_path (str): Path to our database.
+    """
     days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-    with dbopen(ConfigSettings.db_path) as db:
+    with dbopen(db_path) as db:
         day_to_list_of_moods = defaultdict(list)
         for entry in db.execute("SELECT mood, date FROM entries").fetchall():
             # By default datetime.weekday() has 0 = monday so to have 0 = sunday we add 1 and modulo 7

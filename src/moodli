@@ -1,23 +1,36 @@
 #!/usr/bin/env python3
 import os
+import pysftp
 
 from src.ConfigSettings import parse_config
 from src.DatabaseMethods import set_up_db
 from src.MoodliArgumentParser import get_parser
+from src.constants import TEMP_DB_PATH
 
 
 def main():
+    """Main executor function.
+
+    Raises:
+        exception: Catch all exceptions so we can cleanup at the end.
+    """
     try:
-        parse_config()
-        set_up_db()
+        options = parse_config()
+        set_up_db(options['database_location'])
         parser = get_parser()
         args = parser.parse_args()
-        args.func(args)
+        args.func(args, db_path=options["database_location"])
+        if os.path.exists(TEMP_DB_PATH):
+            with pysftp.Connection(host=options['server_ip'],
+                                   username=options['server_username'],
+                                   password=options['server_password']) as sftp:
+                print("Putting db back. Copying {} to {}".format(TEMP_DB_PATH, options['original_db_path']))
+                sftp.put(TEMP_DB_PATH, options['original_db_path'])
     except Exception as exception:
         raise exception
     finally:
-        if os.path.exists(os.path.join('/', 'tmp', 'moodli.db')):
-            os.remove(os.path.join('/', 'tmp', 'moodli.db'))
+        if os.path.exists(TEMP_DB_PATH):
+            os.remove(TEMP_DB_PATH)
 
 
 if __name__ == '__main__':

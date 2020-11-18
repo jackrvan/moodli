@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from src.constants import dbopen
-from src.ConfigSettings import ConfigSettings
 
 class Entry():
     def __init__(self, content, mood, activities, sleep, date=datetime.now().date()):
@@ -13,20 +12,26 @@ class Entry():
 
     def __str__(self):
         activities = ', '.join(self.activities)
-        return f'================\n' \
-                'Date: {self.date}\n' \
-                'Mood: {self.mood}/10\n' \
-                'Hours of Sleep: {self.sleep}\n' \
-                'Activities: {activities}\nDiary Entry: {self.content}\n' \
-                '================'
+        return '================\n' \
+               f'Date: {self.date}\n' \
+               f'Mood: {self.mood}/10\n' \
+               f'Hours of Sleep: {self.sleep}\n' \
+               f'Activities: {activities}\nDiary Entry: {self.content}\n' \
+               '================'
 
-    def save_to_database(self):
-        with dbopen(ConfigSettings.db_path) as db:
+    def save_to_database(self, db_path):
+        """Save this object to the database
+
+        Args:
+            db_path (str): Path to our database.
+        """
+        with dbopen(db_path) as db:
             db.execute("INSERT INTO entries(content, mood, sleep, date) " \
                 "VALUES(?, ?, ?, ?)", (self.content, self.mood, self.sleep, self.date))
             entry_id = db.lastrowid
             for activity in self.activities:
-                activity_ids = db.execute("SELECT rowid FROM activities WHERE activity = ?", (activity,)).fetchall()
+                activity_ids = db.execute("SELECT rowid FROM activities WHERE activity = ?",
+                                          (activity,)).fetchall()
                 if not activity_ids:
                     # We do not have this tag in our db yet
                     db.execute("INSERT INTO activities(activity) VALUES(?)", (activity,))
@@ -36,4 +41,5 @@ class Entry():
                 else:
                     print(f"Found more than one activity of {activity}")
                     return
-                db.execute("INSERT INTO entry_activities(entry_id, activity_id) VALUES(?, ?)", (entry_id, activity_id))
+                db.execute("INSERT INTO entry_activities(entry_id, activity_id) VALUES(?, ?)",
+                           (entry_id, activity_id))

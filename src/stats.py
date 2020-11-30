@@ -38,7 +38,7 @@ def average_mood_per_day(db_path):
         day_to_list_of_moods = defaultdict(list)
         for entry in db.execute("SELECT mood, date FROM entries").fetchall():
             # By default datetime.weekday() has 0 = monday so to have 0 = sunday we add 1 and modulo 7
-            day_to_list_of_moods[days[datetime.strptime(entry[1], "%Y-%m-%d").weekday()+1%7]].append(entry[0])
+            day_to_list_of_moods[days[(datetime.strptime(entry[1], "%Y-%m-%d").weekday()+1)%7]].append(entry[0])
         avgs = {}
         for day, moods in day_to_list_of_moods.items():
             avgs[day] = round(sum(moods)/len(moods), 2)

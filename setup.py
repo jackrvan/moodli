@@ -18,5 +18,6 @@ setup(
     long_description=read('README.md'),
     install_requires=[
         'tabulate',
+        'pysftp',
     ]
 )

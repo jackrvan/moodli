@@ -1,6 +1,9 @@
+import logging
 from datetime import datetime
 
-from src.constants import dbopen
+from src.util import dbopen
+
+logger = logging.getLogger('moodli_logger')
 
 class Entry():
     def __init__(self, content, mood, activities, sleep, date=datetime.now().date()):
@@ -39,7 +42,7 @@ class Entry():
                 elif len(activity_ids) == 1:
                     activity_id = activity_ids[0][0]
                 else:
-                    print(f"Found more than one activity of {activity}")
+                    logger.warning("Found more than one activity of %s", activity)
                     return
                 db.execute("INSERT INTO entry_activities(entry_id, activity_id) VALUES(?, ?)",
                            (entry_id, activity_id))

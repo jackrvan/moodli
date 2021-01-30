@@ -1,8 +1,11 @@
+import logging
 from collections import defaultdict
 from datetime import datetime
 from tabulate import tabulate
 
-from src.constants import dbopen
+from src.util import dbopen
+
+logger = logging.getLogger('moodli_logger')
 
 def average_mood_per_activity(db_path):
     """Calculate the average mood based on each activity you have done
@@ -23,8 +26,8 @@ def average_mood_per_activity(db_path):
         avgs = {}
         for activity, moods in activity_to_list_of_moods.items():
             avgs[activity] = round(sum(moods)/len(moods), 2)
-        print("\nAVERAGE MOOD BY ACTIVITY")
-        print(tabulate(sorted(avgs.items(), key=lambda x: x[1], reverse=True),
+        logger.info("\nAVERAGE MOOD BY ACTIVITY")
+        logger.info(tabulate(sorted(avgs.items(), key=lambda x: x[1], reverse=True),
                        headers=["Activity", "Avg Mood"]))
 
 def average_mood_per_day(db_path):
@@ -42,5 +45,5 @@ def average_mood_per_day(db_path):
         avgs = {}
         for day, moods in day_to_list_of_moods.items():
             avgs[day] = round(sum(moods)/len(moods), 2)
-        print("\nAVERAGE MOOD BY DAY OF WEEK")
-        print(tabulate(avgs.items(), headers=["Day", "Avg Mood"]))
+        logger.info("\nAVERAGE MOOD BY DAY OF WEEK")
+        logger.info(tabulate(avgs.items(), headers=["Day", "Avg Mood"]))

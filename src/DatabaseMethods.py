@@ -1,12 +1,15 @@
 import os
+import logging
 from datetime import datetime
 from collections import namedtuple
 
-from src.constants import dbopen, ENTRY_COLUMNS
+from src.util import dbopen
+from src.constants import ENTRY_COLUMNS
 from src.Entry import Entry
 
 # entry.content looks a lot cleaner than entry[1]
 EntryTuple = namedtuple("EntryTuple", ['rowid', 'content', 'mood', 'sleep', 'date'])
+logger = logging.getLogger('moodli_logger')
 
 
 def set_up_db(db_path):
@@ -26,7 +29,7 @@ def set_up_db(db_path):
     if not os.path.exists(db_path):
         if not os.path.exists(os.path.dirname(db_path)):
             os.makedirs(os.path.dirname(db_path))
-        print(f"Writing {db_path}")
+        logger.debug("Writing %s", db_path)
         with dbopen(db_path) as db:
             for create_statement in create_statements:
                 db.execute(create_statement)
@@ -45,9 +48,9 @@ def get_todays_entry(db_path):
             "FROM entries WHERE date = ?", (datetime.now().date(),)).fetchall()
         entries = []
         if not todays_entries:
-            print("You have not added an entry for today yet.")
+            logger.info("You have not added an entry for today yet.")
         elif len(todays_entries) > 1:
-            print("You somehow have more than one entry today.")
+            logger.warning("You somehow have more than one entry today.")
             for entry in todays_entries:
                 entry = EntryTuple._make(entry)
                 activities = get_activities_from_entry_id(entry.rowid, db_path)
@@ -127,7 +130,7 @@ def get_all_entries(db_path):
     Returns:
         list(Entry): List of all entries found in our database.
     """
-    print("ACCESSING DB {}".format(db_path))
+    logger.debug("Accessing DB %s", db_path)
     with dbopen(db_path) as db:
         entries = []
         for entry in db.execute("SELECT rowid, content, mood, sleep, date FROM entries").fetchall():

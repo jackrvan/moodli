@@ -1,12 +1,34 @@
-import os
-from pathlib import Path
-import sys
-import pysftp
 import logging
+import os
+import sys
+import re
+from pathlib import Path
 
+import pysftp
 from src.constants import KNOWN_CONFIG_ARGS, TEMP_DB_PATH
 
 logger = logging.getLogger('moodli_logger')
+
+def write_config_file():
+    """Write out an example config file
+    """
+    config_path = os.path.join(str(Path.home()), '.moodli', 'moodli.config')
+    if os.path.exists(config_path):
+        ans = input(f"{config_path} already exists. Do you want to overwrite it [y/n]: ")
+        while ans not in ['y', 'Y', 'n', 'N']:
+            logger.error("Did not recognize %s must be 'y' or 'n'", ans)
+            ans = input(f"{config_path} already exists. Do you want to overwrite it [y/n]: ")
+        if ans in ['N', 'n']:
+            logger.info("Exiting without doing anything")
+            return
+        os.remove(config_path)
+    elif not os.path.exists(os.path.dirname(config_path)):
+        # .moodli directory does not exist
+        os.mkdir(os.path.dirname(config_path))
+    # Now we can simply write out our config file
+    with open(config_path, 'w+') as config_file:
+        for arg, example in KNOWN_CONFIG_ARGS.items():
+            config_file.write(f'#{arg}={example}\n')
 
 def parse_config():
     """Parse the config file located in ~/.moodli/moodli.config
@@ -15,7 +37,11 @@ def parse_config():
     with open(os.path.join(str(Path.home()), '.moodli', 'moodli.config'), 'r') as f:
         for knt, line in enumerate(f.readlines(), start=1):
             try:
-                option, value = line.strip().split('=')
+                line = re.sub('#.*', '', line)  # Filter out comments
+                line = line.strip()
+                if not line:
+                    continue
+                option, value = line.split('=')
                 if option in KNOWN_CONFIG_ARGS:
                     options[option] = value.strip(' "\n')
                 else:

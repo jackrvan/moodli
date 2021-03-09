@@ -1,10 +1,12 @@
 import argparse
 import logging
 
+from src.ConfigSettings import parse_config, write_config_file
+from src.DatabaseMethods import get_all_entries, get_entries_by_activity, \
+    get_entries_by_dates, get_todays_entry, set_up_db, update_database_to_new_version
 from src.Entry import Entry
-from src.DatabaseMethods import get_todays_entry, get_entries_by_activity, \
-    get_entries_by_dates, get_all_entries, update_database_to_new_version
 from src.stats import average_mood_per_activity, average_mood_per_day
+from src.util import put_db_back
 
 logger = logging.getLogger('moodli_logger')
 
@@ -16,9 +18,12 @@ def daily_entry(args, **kwargs):
         args (Namespace): Args specified via argparse.
         kwargs(dict): Dict of extra options
     """
+    options = parse_config()
+    set_up_db(options['database_location'])
     entry = Entry(args.content, args.mood, args.activities, args.hours_of_sleep)
-    entry.save_to_database(kwargs['db_path'])
+    entry.save_to_database(options['database_location'])
     logger.info(entry)
+    put_db_back(options)
 
 def get_entry(args, **kwargs):
     """Function to call when get entry subparser is called.
@@ -27,16 +32,23 @@ def get_entry(args, **kwargs):
         args (Namespace): Args specified via argparse.
         kwargs(dict): Dict of extra options
     """
+    options = parse_config()
+    set_up_db(options['database_location'])
     if args.today:
-        logger.info('\n'.join(str(x) for x in get_todays_entry(kwargs['db_path'])))
+        logger.info('\n'.join(str(x) for x in \
+            get_todays_entry(options['database_location'])))
     elif args.activity:
-        logger.info('\n'.join(str(x) for x in get_entries_by_activity(args.activity, kwargs['db_path'])))
+        logger.info('\n'.join(str(x) for x in \
+            get_entries_by_activity(args.activity, options['database_location'])))
     elif args.dates:
-        logger.info('\n'.join(str(x) for x in get_entries_by_dates(args.dates, kwargs['db_path'])))
+        logger.info('\n'.join(str(x) for x in \
+            get_entries_by_dates(args.dates, options['database_location'])))
     elif args.all:
-        logger.info('\n'.join(str(x) for x in get_all_entries(kwargs['db_path'])))
+        logger.info('\n'.join(str(x) for x in \
+            get_all_entries(options['database_location'])))
     else:
         logger.error("HMM not sure how you got here")
+    put_db_back(options)
 
 def stats(args, **kwargs):
     """Function to call when stats subparser is called.
@@ -45,8 +57,11 @@ def stats(args, **kwargs):
         args (Namespace): Args specified via argparse.
         kwargs(dict): Dict of extra options
     """
-    average_mood_per_activity(kwargs['db_path'])
-    average_mood_per_day(kwargs['db_path'])
+    options = parse_config()
+    set_up_db(options['database_location'])
+    average_mood_per_activity(options['database_location'])
+    average_mood_per_day(options['database_location'])
+    put_db_back(options)
 
 def update_database(args, **kwargs):
     """Subparser update-database command will call this.
@@ -55,7 +70,19 @@ def update_database(args, **kwargs):
         args (Namespace): Args specified via argparse.
         kwargs(dict): Dict of extra options
     """
-    update_database_to_new_version(kwargs['db_path'])
+    options = parse_config()
+    set_up_db(options['database_location'])
+    update_database_to_new_version(options['database_location'])
+    put_db_back(options)
+
+def create_config(args, **kwargs):
+    """Subparser create-config will call this
+
+    Args:
+        args (Namespace): Args specified via argparse.
+        kwargs(dict): Dict of extra options
+    """
+    write_config_file()
 
 def mood_type(mood):
     """Tests to make sure we get an int between 1 and 10 via argparse
@@ -118,4 +145,8 @@ def get_parser():
     update_database_parser = subparsers.add_parser("update-database", parents=[parser], add_help=False,
                                                    help="Update database to new version.")
     update_database_parser.set_defaults(func=update_database)
+
+    create_config_parser = subparsers.add_parser("create-config", parents=[parser], add_help=False,
+                                                 help="Create the config file in ~/.moodli/moodli.config")
+    create_config_parser.set_defaults(func=create_config)
     return parser

@@ -1,5 +1,10 @@
-import sqlite3
 import logging
+import os
+import sqlite3
+import pysftp
+
+from src.constants import TEMP_DB_PATH
+
 
 def configure_logging(debug):
     logger = logging.getLogger("moodli_logger")
@@ -14,6 +19,14 @@ def configure_logging(debug):
 
     logger.addHandler(ch)
 
+def put_db_back(options):
+    logger = logging.getLogger('moodli_logger')
+    if os.path.exists(TEMP_DB_PATH):
+        with pysftp.Connection(host=options['server_ip'],
+                                username=options['server_username'],
+                                password=options['server_password']) as sftp:
+            logger.debug("Putting db back. Copying %s to %s", TEMP_DB_PATH, options['original_db_path'])
+            sftp.put(TEMP_DB_PATH, options['original_db_path'])
 
 class dbopen():
     """Simple context manager for opening a database file. Automatically commits and exits

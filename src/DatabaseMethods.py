@@ -151,3 +151,9 @@ def update_database_to_new_version(db_path):
                             {x[1] for x in db.execute("PRAGMA table_info(entries)").fetchall()}
         for column_name in missing_columns:
             db.execute("ALTER TABLE entries ADD {} {}".format(column_name, ENTRY_COLUMNS[column_name]))
+
+def delete_from_database(db_path, date):
+    with dbopen(db_path) as db:
+        db.execute(f"DELETE FROM entries WHERE date = '{date}'")
+        print(f"Deleted {db.rowcount} entries")
+

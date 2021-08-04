@@ -1,12 +1,15 @@
 import argparse
 import logging
+from datetime import datetime, timedelta
 
 from src.ConfigSettings import parse_config, write_config_file
-from src.DatabaseMethods import get_all_entries, get_entries_by_activity, \
-    get_entries_by_dates, get_todays_entry, set_up_db, update_database_to_new_version
+from src.DatabaseMethods import (
+    get_all_entries, get_entries_by_activity, get_entries_by_dates,
+    get_todays_entry, set_up_db, update_database_to_new_version, delete_from_database
+)
 from src.Entry import Entry
 from src.stats import average_mood_per_activity, average_mood_per_day
-from src.util import put_db_back
+from src.util import put_db_back, mood_type
 
 logger = logging.getLogger('moodli_logger')
 
@@ -20,7 +23,10 @@ def daily_entry(args, **kwargs):
     """
     options = parse_config()
     set_up_db(options['database_location'])
-    entry = Entry(args.content, args.mood, args.activities, args.hours_of_sleep)
+    date_of_entry = datetime.now().date()
+    if args.yesterday:
+        date_of_entry -= timedelta(days=1)
+    entry = Entry(args.content, args.mood, args.activities, args.hours_of_sleep, date_of_entry)
     entry.save_to_database(options['database_location'])
     logger.info(entry)
     put_db_back(options)
@@ -84,25 +90,9 @@ def create_config(args, **kwargs):
     """
     write_config_file()
 
-def mood_type(mood):
-    """Tests to make sure we get an int between 1 and 10 via argparse
-
-    Args:
-        mood (str): The input we want to test
-
-    Raises:
-        argparse.ArgumentTypeError: Raise if we do not have an integer or its not between 1 and 10
-
-    Returns:
-        int: The input we were given casted to an int.
-    """
-    try:
-        mood = int(mood)
-        if mood < 1 or mood > 10:
-            raise argparse.ArgumentTypeError("Mood must be between 1 and 10")
-        return mood
-    except ValueError as value_error:
-        raise argparse.ArgumentTypeError("Mood must be an integer") from value_error
+def delete_entry(args, **kwargs):
+    options = parse_config()
+    delete_from_database(options['database_location'], args.date)
 
 def get_parser():
     """Use argparse to define the command line parsers/options
@@ -118,11 +108,11 @@ def get_parser():
                                                 parents=[parser], add_help=False)
     mutually_exclusive = get_entry_subparser.add_mutually_exclusive_group(required=True)
     mutually_exclusive.add_argument("--today", '-t', action="store_true", help="View todays entry.")
-    mutually_exclusive.add_argument("--activity", '-a', type=str,
+    mutually_exclusive.add_argument("--activity", '-act', type=str,
                                     help="Get all entries that you did an activity")
     mutually_exclusive.add_argument("--dates", '-d', nargs="+",
                                     help="Get all entries on the given dates. Format yyyy-mm-dd")
-    mutually_exclusive.add_argument("--all", action="store_true", help="Get all entries")
+    mutually_exclusive.add_argument("--all", "-a", action="store_true", help="Get all entries")
     get_entry_subparser.set_defaults(func=get_entry)
 
     daily_entry_subparser = subparsers.add_parser("daily-entry", help="Enter your daily entry",
@@ -134,13 +124,20 @@ def get_parser():
     daily_entry_subparser.add_argument("--activities", '-a', nargs="+", default=[],
                                        help="List of activities you did today.")
     daily_entry_subparser.add_argument("--hours-of-sleep", '-hos', type=int,
-                                       help="How many hours of sleep did you get last night")
+                                       help="How many hours of sleep are you running on?")
+    daily_entry_subparser.add_argument("--yesterday", '-y', action="store_true",
+                                       help="Add an entry for yesterday instead of today")
     daily_entry_subparser.set_defaults(func=daily_entry)
 
     stats_parser = subparsers.add_parser("stats", add_help=False,
                                          help="Get stats on what activities make you feel better or worse.",
                                          parents=[parser])
     stats_parser.set_defaults(func=stats)
+
+    delete_entry_subparser = subparsers.add_parser("delete-entry", help="Delete an entry",
+                                                   parents=[parser], add_help=False)
+    delete_entry_subparser.add_argument("--date", '-d', help="Date of entry you want to delete in yyyy-mm-dd format")
+    delete_entry_subparser.set_defaults(func=delete_entry)
 
     update_database_parser = subparsers.add_parser("update-database", parents=[parser], add_help=False,
                                                    help="Update database to new version.")

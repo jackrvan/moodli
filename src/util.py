@@ -28,6 +28,26 @@ def put_db_back(options):
             logger.debug("Putting db back. Copying %s to %s", TEMP_DB_PATH, options['original_db_path'])
             sftp.put(TEMP_DB_PATH, options['original_db_path'])
 
+def mood_type(mood):
+    """Tests to make sure we get an int between 1 and 10 via argparse
+
+    Args:
+        mood (str): The input we want to test
+
+    Raises:
+        argparse.ArgumentTypeError: Raise if we do not have an integer or its not between 1 and 10
+
+    Returns:
+        int: The input we were given casted to an int.
+    """
+    try:
+        mood = int(mood)
+        if mood < 1 or mood > 10:
+            raise argparse.ArgumentTypeError("Mood must be between 1 and 10")
+        return mood
+    except ValueError as value_error:
+        raise argparse.ArgumentTypeError("Mood must be an integer") from value_error
+
 class dbopen():
     """Simple context manager for opening a database file. Automatically commits and exits
     """

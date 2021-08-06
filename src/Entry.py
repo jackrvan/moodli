@@ -46,3 +46,4 @@ class Entry():
                     return
                 db.execute("INSERT INTO entry_activities(entry_id, activity_id) VALUES(?, ?)",
                            (entry_id, activity_id))
+

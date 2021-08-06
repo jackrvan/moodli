@@ -19,12 +19,12 @@ def set_up_db(db_path):
         db_path (str): Path to our database.
     """
     create_entries = "CREATE TABLE IF NOT EXISTS " \
-                     "entries(content TEXT, mood INTEGER NOT NULL, sleep INTEGER, date TEXT NOT NULL)"
-    create_activities = "CREATE TABLE IF NOT EXISTS activities(activity  TEXT NOT NULL)"
+                     "entries(rowid INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT, mood INTEGER NOT NULL, sleep INTEGER, date TEXT NOT NULL)"
+    create_activities = "CREATE TABLE IF NOT EXISTS activities(rowid INTEGER PRIMARY KEY AUTOINCREMENT, activity TEXT NOT NULL)"
     create_entry_activities = "CREATE TABLE IF NOT EXISTS " \
                               "entry_activities(entry_id INTEGER, activity_id INTEGER, " \
-                              "FOREIGN KEY(entry_id) REFERENCES entries(rowid), " \
-                              "FOREIGN KEY(activity_id) REFERENCES activities(rowid))"
+                              "FOREIGN KEY(entry_id) REFERENCES entries(rowid) ON DELETE CASCADE, " \
+                              "FOREIGN KEY(activity_id) REFERENCES activities(rowid) ON DELETE CASCADE)"
     create_statements = [create_entries, create_activities, create_entry_activities]
     if not os.path.exists(db_path):
         if not os.path.exists(os.path.dirname(db_path)):

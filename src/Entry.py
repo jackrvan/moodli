@@ -27,8 +27,16 @@ class Entry():
 
         Args:
             db_path (str): Path to our database.
+        Return:
+            bool: True if we added to database
         """
         with dbopen(db_path) as db:
+            if db.execute("SELECT * FROM ENTRIES WHERE date=?", (self.date,)).fetchall():
+                ans = input(f"You already have an entry for {self.date}. Do you want to replace it [y/n]? ")
+                if ans not in ['y', 'Y']:
+                    print("Not adding new entry")
+                    return False
+                db.execute("DELETE FROM ENTRIES WHERE date=?", (self.date,))
             db.execute("INSERT INTO entries(content, mood, sleep, date) " \
                 "VALUES(?, ?, ?, ?)", (self.content, self.mood, self.sleep, self.date))
             entry_id = db.lastrowid
@@ -46,4 +54,4 @@ class Entry():
                     return
                 db.execute("INSERT INTO entry_activities(entry_id, activity_id) VALUES(?, ?)",
                            (entry_id, activity_id))
-
+        return True

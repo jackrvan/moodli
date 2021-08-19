@@ -27,9 +27,9 @@ def daily_entry(args, **kwargs):
     if args.yesterday:
         date_of_entry -= timedelta(days=1)
     entry = Entry(args.content, args.mood, args.activities, args.hours_of_sleep, date_of_entry)
-    entry.save_to_database(options['database_location'])
-    logger.info(entry)
-    put_db_back(options)
+    if entry.save_to_database(options['database_location']):
+        logger.info(entry)
+        put_db_back(options)
 
 def get_entry(args, **kwargs):
     """Function to call when get entry subparser is called.
